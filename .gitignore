@@ -114,7 +114,7 @@ venv.bak/
 *.pch
 
 # Compiled Dynamic libraries
-*.so
+#*.so
 *.dylib
 *.dll
 
@@ -132,3 +132,6 @@ venv.bak/
 *.exe
 *.out
 *.app
+
+#Backup files
+*.py.bak
