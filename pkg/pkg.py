@@ -110,15 +110,17 @@ class PKG(object):
         data = []
         target = []
         for entity in entity2id:
+            if entity not in entity2info:
+                continue
             ent_info = entity2info[entity]
             ent_id = entity2id[entity]
             ent_embedding = ent_embeddings[ent_id]
-            ent_gender = ent_info[:-1]
+            ent_gender = ent_info[-1]
             data.append(ent_embedding)
             target.append(ent_gender)
 
-        print("Sample data: " + data[0])
-        print("Sample target: " + target[0])
+        print("Sample data: %s" % data[0])
+        print("Sample target: %s" % target[0])
 
         # Now run cross-validation
         from sklearn.model_selection import cross_val_score
