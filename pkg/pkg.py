@@ -20,6 +20,7 @@ class PKG(object):
                     continue
                 user_id = "user_" + words[0]
                 self.user_info[user_id] = words[1:]
+            print("{} users in total".format(len(self.user_info)))
 
     def parse_app_list(self, app_list_path):
         with open(app_list_path, "r") as app_list_file:
@@ -30,6 +31,7 @@ class PKG(object):
                     continue
                 app_id = "app_" + words[0]
                 self.app_info[app_id] = words[1:]
+            print("{} apps in total".format(len(self.app_info)))
 
     def parse_pkg(self, pkg_path):
         with open(pkg_path, "r") as pkg_file:
@@ -41,11 +43,17 @@ class PKG(object):
                 user_id = "user_" + words[0]
                 app_id = "app_" + words[1]
                 day, weight = words[2:4]
-                self.g.add_edge(user_id, app_id, day=day, weight=weight)
+                self.g.add_edge(user_id, app_id, day=int(day), weight=float(weight))
+            print("{} edges in total".format(len(self.g.edges())))
 
     def output_as_openkg(self, output_dir, days=None, weight_threshold=0):
+        print("Trying to output knowledge graph to " + output_dir)
         included_triples = set()
-        for s, t in set(self.g.edges()):
+        traversed_edges = set()
+        for s, t in self.g.edges():
+            if (s, t) in traversed_edges:
+                continue
+            traversed_edges.add((s, t))
             for i in self.g[s][t]:
                 e_attr = self.g[s][t][i]
                 if days and e_attr["day"] not in days:
@@ -53,10 +61,10 @@ class PKG(object):
                 if e_attr["weight"] < weight_threshold:
                     continue
                 included_triples.add((s, t, e_attr["day"]))
+        print("{} matched triples".format(len(included_triples)))
 
-        zip_triples = zip(*included_triples)
-        included_nodes = sorted(set(zip_triples[0] + zip_triples[1]))
-        included_days = sorted(set(zip_triples[2]))
+        included_nodes = sorted(set([t[0] for t in included_triples] + [t[1] for t in included_triples]))
+        included_days = sorted(set([t[2] for t in included_triples]))
         entity2id = {k: v for v, k in enumerate(included_nodes)}
         relation2id = {k: v for v, k in enumerate(included_days)}
 
@@ -69,7 +77,7 @@ class PKG(object):
         with open(output_dir + "/relation2id.txt", "w") as relation2id_file:
             relation2id_file.write("{}\n".format(len(included_days)))
             for relation_id, relation_name in enumerate(included_days):
-                entity2id_file.write("{} {}\n".format(relation_name, relation_id))
+                relation2id_file.write("{} {}\n".format(relation_name, relation_id))
             relation2id_file.close()
 
         with open(output_dir + "/train2id.txt", "w") as train2id_file:
@@ -80,8 +88,9 @@ class PKG(object):
 
 
 if __name__ == "__main__":
-    base_dir = "C:\Users\liyc\PycharmProjects\OpenKE\\temp"
-    pkg = PKG(pkg_path=base_dir + "\sample_data\user_app_day_duration.txt",
-              user_list_path=base_dir + "\sample_data\user_id_imei_birth_gender.txt",
-              app_list_path=base_dir + "\sample_data\\app_id_package_usercount.txt")
-    pkg.output_as_openkg(output_dir=base_dir+"\output", days=[0])
+    base_dir = "../temp"
+    pkg = PKG(pkg_path=base_dir + "/sample_data/user_app_day_duration.txt",
+              user_list_path=base_dir + "/sample_data/user_id_imei_birth_gender.txt",
+              app_list_path=base_dir + "/sample_data/app_id_package_usercount.txt")
+    print("PKG loaded.")
+    pkg.output_as_openkg(output_dir=base_dir+"/output", days=[0])
