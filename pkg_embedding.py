@@ -6,7 +6,7 @@ import numpy as np
 con = config.Config()
 con.set_in_path("./temp/output/")
 
-con.set_test_flag(True)
+con.set_test_flag(False)
 con.set_work_threads(4)
 con.set_train_times(500)
 con.set_nbatches(100)
@@ -19,9 +19,9 @@ con.set_rel_neg_rate(0)
 con.set_opt_method("Adam")
 
 #Models will be exported via tf.Saver() automatically.
-con.set_export_files("./temp/embedding/model.vec.tf", 0)
+con.set_export_files("./temp/embedding_TransE/model.vec.tf", 0)
 #Model parameters will be exported to json files automatically.
-con.set_out_files("./temp/embedding/embedding.vec.json")
+con.set_out_files("./temp/embedding_TransE/embedding.vec.json")
 #Initialize experimental settings.
 con.init()
 #Set the knowledge embedding model
