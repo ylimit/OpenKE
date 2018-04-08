@@ -4,7 +4,7 @@ import tensorflow as tf
 import numpy as np
 
 con = config.Config()
-con.set_in_path("./temp/output/")
+con.set_in_path("./temp/openke/")
 
 con.set_test_flag(False)
 con.set_work_threads(4)
