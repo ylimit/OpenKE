@@ -1,3 +1,4 @@
+"""
 from . import Model
 from Model import *
 from . import TransE
@@ -16,3 +17,5 @@ from . import HolE
 from HolE import *
 from . import ComplEx
 from ComplEx import *
+"""
+

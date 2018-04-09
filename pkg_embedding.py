@@ -13,11 +13,11 @@ def parse_args():
     """
     parser = argparse.ArgumentParser(description="Train personal knowledge embeddings.",
                                      formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument("-openkg", action="store", dest="openkg_dir",
+    parser.add_argument("-openkg", action="store", dest="openkg_dir", required=True,
                         help="directory of openkg graph")
-    parser.add_argument("-pkg", action="store", dest="pkg_dir",
+    parser.add_argument("-pkg", action="store", dest="pkg_dir", required=True,
                         help="directory of pkg dir")
-    parser.add_argument("-output", action="store", dest="output_dir",
+    parser.add_argument("-output", action="store", dest="output_dir", required=True,
                         help="directory of output dir")
     parser.add_argument("-model", action="store", dest="model_name", default="TransE",
                         help="name of the model to train the embeddings, could be TransE, TransH, HolE, RESCAL, etc.")
