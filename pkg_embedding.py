@@ -2,8 +2,16 @@ import argparse
 import os
 import sys
 
-import models
-import config
+from config.Config import Config
+from models.TransE import TransE
+from models.TransD import TransD
+from models.TransH import TransH
+from models.TransR import TransR
+from models.RESCAL import RESCAL
+from models.DistMult import DistMult
+from models.ComplEx import ComplEx
+from models.HolE import HolE
+
 from pkg.pkg import PKG
 
 
@@ -38,7 +46,7 @@ def convert_pkg_to_openkg(opts):
 def train_embeddings(opts):
     os.makedirs(opts.output_dir, exist_ok=True)
 
-    con = config.Config()
+    con = Config()
     con.set_in_path(opts.openkg_dir)
 
     con.set_test_flag(False)
@@ -62,21 +70,21 @@ def train_embeddings(opts):
 
     # Set the knowledge embedding model
     if opts.model_name == "TransE":
-        con.set_model(models.TransE)
+        con.set_model(TransE)
     elif opts.model_name == "TransD":
-        con.set_model(models.TransD)
+        con.set_model(TransD)
     elif opts.model_name == "TransR":
-        con.set_model(models.TransR)
+        con.set_model(TransR)
     elif opts.model_name == "TransH":
-        con.set_model(models.TransH)
+        con.set_model(TransH)
     elif opts.model_name == "ComplEx":
-        con.set_model(models.ComplEx)
+        con.set_model(ComplEx)
     elif opts.model_name == "DistMult":
-        con.set_model(models.DistMult)
+        con.set_model(DistMult)
     elif opts.model_name == "HolE":
-        con.set_model(models.HolE)
+        con.set_model(HolE)
     elif opts.model_name == "RESCAL":
-        con.set_model(models.RESCAL)
+        con.set_model(RESCAL)
     else:
         print("Unknown model: " + opts.model_name)
         sys.exit(1)
