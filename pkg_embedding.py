@@ -2,8 +2,8 @@ import argparse
 import os
 import sys
 
-import config
 import models
+import config
 from pkg.pkg import PKG
 
 
