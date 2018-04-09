@@ -29,6 +29,14 @@ def parse_args():
                         help="directory of output dir")
     parser.add_argument("-model", action="store", dest="model_name", default="TransE",
                         help="name of the model to train the embeddings, could be TransE, TransH, HolE, RESCAL, etc.")
+    parser.add_argument("-ndays", action="store", dest="ndays", default=1,
+                        help="number of days of knowledge to include")
+    parser.add_argument("-phases", action="store", dest="phases", default="gen_kg,train_embed,eval_embed",
+                        help="phases to run, could be one or more or gen_kg, train_embed and eval_embed.")
+    parser.add_argument("-alpha", action="store", dest="alpha", default=0.001,
+                        help="hyper parameter alpha.")
+    parser.add_argument("-nbatches", action="store", dest="nbatches", default=100,
+                        help="hyper parameter nbatches.")
 
     options = parser.parse_args()
     # print options
@@ -40,20 +48,21 @@ def convert_pkg_to_openkg(opts):
               user_list_path=os.path.join(opts.pkg_dir, "user_id_imei_birth_gender.txt"),
               app_list_path=os.path.join(opts.pkg_dir, "app_id_package_usercount.txt"))
     print("PKG loaded.")
-    pkg.output_as_openkg(output_dir=opts.openkg_dir, days=[0])
+    days = range(0, int(opts.ndays))
+    pkg.output_as_openkg(output_dir=opts.openkg_dir, days=days)
 
 
 def train_embeddings(opts):
     os.makedirs(opts.output_dir, exist_ok=True)
 
     con = Config()
-    con.set_in_path(opts.openkg_dir)
+    con.set_in_path(str(opts.openkg_dir).encode("utf-8"))
 
     con.set_test_flag(False)
     con.set_work_threads(4)
     con.set_train_times(500)
-    con.set_nbatches(100)
-    con.set_alpha(0.001)
+    con.set_nbatches(int(opts.nbatches))
+    con.set_alpha(float(opts.alpha))
     con.set_margin(1.0)
     con.set_bern(0)
     con.set_dimension(64)
@@ -106,10 +115,13 @@ def main():
     """
     opts = parse_args()
 
-    convert_pkg_to_openkg(opts)
-    train_embeddings(opts)
-    evaluate_embeddings(opts)
-
+    phases = str(opts.phases).split(",")
+    if "gen_kg" in phases:
+        convert_pkg_to_openkg(opts)
+    if "train_embed" in phases:
+        train_embeddings(opts)
+    if "eval_embed" in phases:
+        evaluate_embeddings(opts)
     return
 
 
