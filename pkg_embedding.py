@@ -2,16 +2,6 @@ import argparse
 import os
 import sys
 
-from config.Config import Config
-from models.TransE import TransE
-from models.TransD import TransD
-from models.TransH import TransH
-from models.TransR import TransR
-from models.RESCAL import RESCAL
-from models.DistMult import DistMult
-from models.ComplEx import ComplEx
-from models.HolE import HolE
-
 from pkg.pkg import PKG
 
 
@@ -33,10 +23,10 @@ def parse_args():
                         help="number of days of knowledge to include")
     parser.add_argument("-phases", action="store", dest="phases", default="gen_kg,train_embed,eval_embed",
                         help="phases to run, could be one or more or gen_kg, train_embed and eval_embed.")
-    parser.add_argument("-alpha", action="store", dest="alpha", default=0.001,
-                        help="hyper parameter alpha.")
-    parser.add_argument("-nbatches", action="store", dest="nbatches", default=100,
-                        help="hyper parameter nbatches.")
+    # parser.add_argument("-alpha", action="store", dest="alpha", default=0.001,
+    #                     help="hyper parameter: alpha.")
+    # parser.add_argument("-nbatches", action="store", dest="nbatches", default=100,
+    #                     help="hyper parameter: nbatches.")
 
     options = parser.parse_args()
     # print options
@@ -53,6 +43,16 @@ def convert_pkg_to_openkg(opts):
 
 
 def train_embeddings(opts):
+    from config.Config import Config
+    from models.TransE import TransE
+    from models.TransD import TransD
+    from models.TransH import TransH
+    from models.TransR import TransR
+    from models.RESCAL import RESCAL
+    from models.DistMult import DistMult
+    from models.ComplEx import ComplEx
+    from models.HolE import HolE
+
     os.makedirs(opts.output_dir, exist_ok=True)
 
     con = Config()
@@ -61,8 +61,8 @@ def train_embeddings(opts):
     con.set_test_flag(False)
     con.set_work_threads(4)
     con.set_train_times(500)
-    con.set_nbatches(int(opts.nbatches))
-    con.set_alpha(float(opts.alpha))
+    con.set_nbatches(100)
+    con.set_alpha(0.001)
     con.set_margin(1.0)
     con.set_bern(0)
     con.set_dimension(64)
