@@ -42,7 +42,7 @@ class Config(object):
     def init(self):
         self.trainModel = None
         if self.in_path != None:
-            self.lib.setInPath(ctypes.create_string_buffer(self.in_path, len(self.in_path) * 2))
+            self.lib.setInPath(ctypes.create_string_buffer(str(self.in_path).encode("utf-8"), len(self.in_path) * 2))
             self.lib.setBern(self.bern)
             self.lib.setWorkThreads(self.workThreads)
             self.lib.randReset()
@@ -50,7 +50,7 @@ class Config(object):
             self.relTotal = self.lib.getRelationTotal()
             self.entTotal = self.lib.getEntityTotal()
             self.trainTotal = self.lib.getTrainTotal()
-            self.batch_size = self.lib.getTrainTotal() / self.nbatches
+            self.batch_size = int(self.lib.getTrainTotal() / self.nbatches)
             self.batch_seq_size = self.batch_size * (1 + self.negative_ent + self.negative_rel)
             self.batch_h = np.zeros(self.batch_size * (1 + self.negative_ent + self.negative_rel), dtype=np.int64)
             self.batch_t = np.zeros(self.batch_size * (1 + self.negative_ent + self.negative_rel), dtype=np.int64)
