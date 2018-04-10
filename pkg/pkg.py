@@ -55,7 +55,7 @@ class PKG(object):
             print("{} edges in total".format(len(g.edges())))
             return g
 
-    def output_as_openkg(self, output_dir, days=None, weight_threshold=0):
+    def output_as_openke(self, output_dir, days=None, weight_threshold=0):
         print("Trying to output knowledge graph to " + output_dir)
         included_triples = set()
         traversed_edges = set()
@@ -198,4 +198,4 @@ if __name__ == "__main__":
               user_list_path=base_dir + "/sample_data/user_id_imei_birth_gender.txt",
               app_list_path=base_dir + "/sample_data/app_id_package_usercount.txt")
     print("PKG loaded.")
-    pkg.output_as_openkg(output_dir=base_dir+"/openke", days=[0])
+    pkg.output_as_openke(output_dir=base_dir+"/openke", days=[0])
