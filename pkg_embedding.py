@@ -25,8 +25,8 @@ def parse_args():
                         help="weight threshold of knowledge to include")
     parser.add_argument("-day_rel", action="store_true", dest="day_rel", default=False,
                         help="whether to represent days with different relations")
-    parser.add_argument("-phases", action="store", dest="phases", default="gen_kg,train,eval,visualize",
-                        help="phases to run, could be one or more of gen_kg, train, eval and visualize.")
+    parser.add_argument("-phases", action="store", dest="phases", default="gen_kg,train,evaluate,visualize",
+                        help="phases to run, could be one or more of gen_kg, train, evaluate and visualize.")
     parser.add_argument("-alpha", action="store", dest="alpha", default=0.001,
                         help="hyper parameter: alpha.")
     parser.add_argument("-nbatches", action="store", dest="nbatches", default=100,
@@ -134,7 +134,7 @@ def main():
         convert_pkg_to_openke(opts)
     if "train" in phases:
         train_embeddings(opts)
-    if "eval" in phases:
+    if "evaluate" in phases:
         evaluate_embeddings(opts)
     if "visualize" in phases:
         visualize_embeddings(opts)

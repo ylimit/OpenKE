@@ -69,24 +69,24 @@ class PKG(object):
                     continue
                 if e_attr["weight"] < weight_threshold:
                     continue
-                included_triples.add((s, t, e_attr["day"] if day_rel else 0))
+                included_triples.add((s, t, (e_attr["day"] if day_rel else 0)))
 
         print("{} matched triples".format(len(included_triples)))
 
-        included_nodes = sorted(set([t[0] for t in included_triples] + [t[1] for t in included_triples]))
-        included_days = sorted(set([t[2] for t in included_triples]))
-        entity2id = {k: v for v, k in enumerate(included_nodes)}
-        relation2id = {k: v for v, k in enumerate(included_days)}
+        included_entities = sorted(set([t[0] for t in included_triples] + [t[1] for t in included_triples]))
+        included_relations = sorted(set([t[2] for t in included_triples]))
+        entity2id = {k: v for v, k in enumerate(included_entities)}
+        relation2id = {k: v for v, k in enumerate(included_relations)}
 
         with open(output_dir + "/entity2id.txt", "w") as entity2id_file:
-            entity2id_file.write("{}\n".format(len(included_nodes)))
-            for entity_id, entity_name in enumerate(included_nodes):
+            entity2id_file.write("{}\n".format(len(included_entities)))
+            for entity_id, entity_name in enumerate(included_entities):
                 entity2id_file.write("{} {}\n".format(entity_name, entity_id))
             entity2id_file.close()
 
         with open(output_dir + "/relation2id.txt", "w") as relation2id_file:
-            relation2id_file.write("{}\n".format(len(included_days)))
-            for relation_id, relation_name in enumerate(included_days):
+            relation2id_file.write("{}\n".format(len(included_relations)))
+            for relation_id, relation_name in enumerate(included_relations):
                 relation2id_file.write("{} {}\n".format(relation_name, relation_id))
             relation2id_file.close()
 
