@@ -1,4 +1,9 @@
+import os
 import networkx
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+
 
 class PKG(object):
     def __init__(self, pkg_path, user_list_path, app_list_path):
@@ -128,6 +133,63 @@ class PKG(object):
         clf = svm.SVC()
         scores = cross_val_score(clf, data, target, cv=5)
         print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+
+    @staticmethod
+    def visualize_embeddings(embedding_path, openke_dir, user_info_path):
+        import json
+        embedding_file = open(embedding_path, "r")
+        embedding_json = json.load(embedding_file)
+        ent_embeddings = embedding_json["ent_embeddings"]
+
+        entity2id_file = open(openke_dir + "/entity2id.txt")
+        entity2id = {}
+        for line in entity2id_file.readlines()[1:]:
+            words = line.split()
+            if len(words) != 2:
+                continue
+            entity2id[words[0]] = int(words[1])
+
+        entity2info = PKG.parse_user_list(user_info_path)
+
+        data = []
+        target = []
+        for entity in entity2id:
+            if entity not in entity2info:
+                continue
+            ent_info = entity2info[entity]
+            ent_id = entity2id[entity]
+            ent_embedding = ent_embeddings[ent_id]
+            ent_gender = ent_info[-1]
+            data.append(ent_embedding)
+            target.append(ent_gender)
+
+        print("Computing t-SNE")
+        from sklearn.manifold import TSNE
+        X_tsne = TSNE(n_components=2, init='pca', random_state=0)
+        X_tsne = X_tsne.fit_transform(data)
+
+        print("Visualizing t-SNE")
+        PKG.plot_tsne(X_tsne, target, "t-SNE of embeddings")
+        plt.imsave(os.path.join(os.path.dirname(embedding_path), "t-SNE_user_embedding_gender.png"))
+
+    @staticmethod
+    def plot_tsne(X_tsne, y, title):
+        # Scale and visualize the embedding vectors
+        x_min, x_max = np.min(X_tsne, 0), np.max(X_tsne, 0)
+        X = (X_tsne - x_min) / (x_max - x_min)
+
+        y_min, y_max = np.min(y), np.max(y)
+        y_range = y_max - y_min
+
+        plt.figure()
+        ax = plt.subplot(111)
+        for i in range(X.shape[0]):
+            plt.text(X[i, 0], X[i, 1], str(y[i]),
+                     color=plt.cm.Set1(float(y[i] - y_min) / y_range),
+                     fontdict={'weight': 'bold', 'size': 9})
+        plt.xticks([]), plt.yticks([])
+        if title is not None:
+            plt.title(title)
 
 
 if __name__ == "__main__":
