@@ -90,11 +90,31 @@ class PKG(object):
                 relation2id_file.write("{} {}\n".format(relation_name, relation_id))
             relation2id_file.close()
 
+        import random
+        random.shuffle(included_triples)
+        test_len = 0.1 * len(included_triples)
+        valid_len = 0.2 * len(included_triples)
+
         with open(output_dir + "/train2id.txt", "w") as train2id_file:
-            train2id_file.write("{}\n".format(len(included_triples)))
-            for s, t, day in included_triples:
-                train2id_file.write("{} {} {}\n".format(entity2id[s], entity2id[t], relation2id[day]))
+            train_triples = included_triples[valid_len:]
+            train2id_file.write("{}\n".format(len(train_triples)))
+            for s, t, r in train_triples:
+                train2id_file.write("{} {} {}\n".format(entity2id[s], entity2id[t], relation2id[r]))
             train2id_file.close()
+
+        with open(output_dir + "/valid2id.txt", "w") as valid2id_file:
+            valid_triples = included_triples[test_len:valid_len]
+            valid2id_file.write("{}\n".format(len(valid_triples)))
+            for s, t, r in valid_triples:
+                valid2id_file.write("{} {} {}\n".format(entity2id[s], entity2id[t], relation2id[r]))
+            valid2id_file.close()
+
+        with open(output_dir + "/test2id.txt", "w") as test2id_file:
+            test_triples = included_triples[:test_len]
+            test2id_file.write("{}\n".format(len(test_triples)))
+            for s, t, r in test_triples:
+                test2id_file.write("{} {} {}\n".format(entity2id[s], entity2id[t], relation2id[r]))
+            test2id_file.close()
 
     @staticmethod
     def load_embeddings(embedding_path, openke_dir, user_info_path):

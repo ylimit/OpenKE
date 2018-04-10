@@ -65,7 +65,7 @@ def train_embeddings(opts):
     con = Config()
     con.set_in_path(opts.openke_dir)
 
-    con.set_test_flag(False)
+    con.set_test_flag(True)
     con.set_work_threads(4)
     con.set_train_times(500)
     con.set_nbatches(int(opts.nbatches))
@@ -108,7 +108,7 @@ def train_embeddings(opts):
     # Train the model.
     con.run()
     # To test models after training needs "set_test_flag(True)".
-    # con.test()
+    con.test()
 
 
 def evaluate_embeddings(opts):
