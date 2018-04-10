@@ -56,7 +56,7 @@ def train_embeddings(opts):
     os.makedirs(opts.output_dir, exist_ok=True)
 
     con = Config()
-    con.set_in_path(str(opts.openkg_dir).encode("utf-8"))
+    con.set_in_path(opts.openkg_dir)
 
     con.set_test_flag(False)
     con.set_work_threads(4)
