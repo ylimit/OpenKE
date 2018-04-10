@@ -55,7 +55,7 @@ class PKG(object):
             print("{} edges in total".format(len(g.edges())))
             return g
 
-    def output_as_openke(self, output_dir, days=None, weight_threshold=0):
+    def output_as_openke(self, output_dir, days=None, day_rel=False, weight_threshold=0):
         print("Trying to output knowledge graph to " + output_dir)
         included_triples = set()
         traversed_edges = set()
@@ -69,7 +69,8 @@ class PKG(object):
                     continue
                 if e_attr["weight"] < weight_threshold:
                     continue
-                included_triples.add((s, t, e_attr["day"]))
+                included_triples.add((s, t, e_attr["day"] if day_rel else 0))
+
         print("{} matched triples".format(len(included_triples)))
 
         included_nodes = sorted(set([t[0] for t in included_triples] + [t[1] for t in included_triples]))

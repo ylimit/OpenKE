@@ -23,6 +23,8 @@ def parse_args():
                         help="number of days of knowledge to include")
     parser.add_argument("-weight_threshold", action="store", dest="weight_threshold", default=0,
                         help="weight threshold of knowledge to include")
+    parser.add_argument("-day_rel", action="store_true", dest="day_rel", default=False,
+                        help="whether to represent days with different relations")
     parser.add_argument("-phases", action="store", dest="phases", default="gen_kg,train,eval,visualize",
                         help="phases to run, could be one or more of gen_kg, train, eval and visualize.")
     parser.add_argument("-alpha", action="store", dest="alpha", default=0.001,
@@ -41,7 +43,10 @@ def convert_pkg_to_openke(opts):
               app_list_path=os.path.join(opts.pkg_dir, "app_id_package_usercount.txt"))
     print("PKG loaded.")
     days = range(0, int(opts.ndays))
-    pkg.output_as_openke(output_dir=opts.openke_dir, days=days, weight_threshold=float(opts.weight_threshold))
+    pkg.output_as_openke(output_dir=opts.openke_dir,
+                         days=days,
+                         day_rel=opts.day_rel,
+                         weight_threshold=float(opts.weight_threshold))
 
 
 def train_embeddings(opts):
