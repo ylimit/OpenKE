@@ -93,8 +93,8 @@ class PKG(object):
         import random
         included_triples = list(included_triples)
         random.shuffle(included_triples)
-        test_len = 0.1 * len(included_triples)
-        valid_len = 0.2 * len(included_triples)
+        test_len = int(0.1 * len(included_triples))
+        valid_len = int(0.2 * len(included_triples))
 
         with open(output_dir + "/train2id.txt", "w") as train2id_file:
             train_triples = included_triples[valid_len:]
