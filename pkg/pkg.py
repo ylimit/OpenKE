@@ -155,20 +155,20 @@ class PKG(object):
         plt.imsave(os.path.join(os.path.dirname(embedding_path), "t-SNE_user_embedding_gender.png"))
 
     @staticmethod
-    def plot_tsne(X_tsne, y, title):
+    def plot_tsne(X_tsne, targets, title):
         # Scale and visualize the embedding vectors
         x_min, x_max = np.min(X_tsne, 0), np.max(X_tsne, 0)
         X = (X_tsne - x_min) / (x_max - x_min)
 
-        y_min, y_max = np.min(y), np.max(y)
-        y_range = y_max - y_min
+        y_min, y_max = np.min(targets), np.max(targets)
+        y = (np.array(targets) - y_min) / (y_max - y_min)
 
-        plt.figure()
-        ax = plt.subplot(111)
+        plt.figure(figsize=(10, 10))
+        # ax = plt.subplot(111)
         for i in range(X.shape[0]):
-            plt.text(X[i, 0], X[i, 1], str(y[i]),
-                     color=plt.cm.Set1(float(y[i] - y_min) / y_range),
-                     fontdict={'weight': 'bold', 'size': 9})
+            plt.text(X[i, 0], X[i, 1], str(targets[i]),
+                     color=plt.cm.spring(y[i]),
+                     fontdict={'weight': 'bold', 'size': 8})
         plt.xticks([]), plt.yticks([])
         if title is not None:
             plt.title(title)
