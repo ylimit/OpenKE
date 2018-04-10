@@ -96,7 +96,7 @@ class PKG(object):
             train2id_file.close()
 
     @staticmethod
-    def evaluate_embeddings(embedding_path, openke_dir, user_info_path):
+    def load_embeddings(embedding_path, openke_dir, user_info_path):
         import json
         embedding_file = open(embedding_path, "r")
         embedding_json = json.load(embedding_file)
@@ -112,8 +112,9 @@ class PKG(object):
 
         entity2info = PKG.parse_user_list(user_info_path)
 
-        data = []
-        target = []
+        embeddings = []
+        genders = []
+        ages = []
         for entity in entity2id:
             if entity not in entity2info:
                 continue
@@ -121,55 +122,36 @@ class PKG(object):
             ent_id = entity2id[entity]
             ent_embedding = ent_embeddings[ent_id]
             ent_gender = int(ent_info[-1])
-            data.append(ent_embedding)
-            target.append(ent_gender)
+            ent_age = 2018 - int(ent_info[-2][:4])
+            embeddings.append(ent_embedding)
+            genders.append(ent_gender)
+            ages.append(ent_age)
 
-        print("Sample data: %s" % data[0])
-        print("Sample target: %s" % target[0])
+        print("Sample embeddings: %s" % embeddings[:5])
+        print("Sample genders: %s" % genders[:5])
+        print("Sample ages: %s" % ages[:5])
+        return embeddings, genders, ages
 
+    @staticmethod
+    def evaluate_embeddings(embedding_path, openke_dir, user_info_path):
+        embeddings, genders, ages = PKG.load_embeddings(embedding_path, openke_dir, user_info_path)
         # Now run cross-validation
         from sklearn.model_selection import cross_val_score
         from sklearn import svm
         clf = svm.SVC()
-        scores = cross_val_score(clf, data, target, cv=5)
+        scores = cross_val_score(clf, embeddings, genders, cv=5)
         print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
 
     @staticmethod
     def visualize_embeddings(embedding_path, openke_dir, user_info_path):
-        import json
-        embedding_file = open(embedding_path, "r")
-        embedding_json = json.load(embedding_file)
-        ent_embeddings = embedding_json["ent_embeddings"]
-
-        entity2id_file = open(openke_dir + "/entity2id.txt")
-        entity2id = {}
-        for line in entity2id_file.readlines()[1:]:
-            words = line.split()
-            if len(words) != 2:
-                continue
-            entity2id[words[0]] = int(words[1])
-
-        entity2info = PKG.parse_user_list(user_info_path)
-
-        data = []
-        target = []
-        for entity in entity2id:
-            if entity not in entity2info:
-                continue
-            ent_info = entity2info[entity]
-            ent_id = entity2id[entity]
-            ent_embedding = ent_embeddings[ent_id]
-            ent_gender = ent_info[-1]
-            data.append(ent_embedding)
-            target.append(ent_gender)
-
+        embeddings, genders, ages = PKG.load_embeddings(embedding_path, openke_dir, user_info_path)
         print("Computing t-SNE")
         from sklearn.manifold import TSNE
         X_tsne = TSNE(n_components=2, init='pca', random_state=0)
-        X_tsne = X_tsne.fit_transform(data)
+        X_tsne = X_tsne.fit_transform(embeddings)
 
         print("Visualizing t-SNE")
-        PKG.plot_tsne(X_tsne, target, "t-SNE of embeddings")
+        PKG.plot_tsne(X_tsne, genders, "t-SNE of the embeddings")
         plt.imsave(os.path.join(os.path.dirname(embedding_path), "t-SNE_user_embedding_gender.png"))
 
     @staticmethod
