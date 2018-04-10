@@ -91,6 +91,7 @@ class PKG(object):
             relation2id_file.close()
 
         import random
+        included_triples = list(included_triples)
         random.shuffle(included_triples)
         test_len = 0.1 * len(included_triples)
         valid_len = 0.2 * len(included_triples)
