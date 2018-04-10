@@ -120,7 +120,7 @@ class PKG(object):
             ent_info = entity2info[entity]
             ent_id = entity2id[entity]
             ent_embedding = ent_embeddings[ent_id]
-            ent_gender = ent_info[-1]
+            ent_gender = int(ent_info[-1])
             data.append(ent_embedding)
             target.append(ent_gender)
 
