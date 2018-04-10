@@ -1,10 +1,10 @@
-import config
-import models
+from config.Config import Config
+from models.TransE import TransE
 import tensorflow as tf
 import numpy as np
 
 #Input training files from benchmarks/FB15K/ folder.
-con = config.Config()
+con = Config()
 #True: Input test files from the same folder.
 con.set_in_path("./benchmarks/FB15K/")
 
@@ -27,7 +27,7 @@ con.set_out_files("./res/embedding.vec.json")
 #Initialize experimental settings.
 con.init()
 #Set the knowledge embedding model
-con.set_model(models.TransE)
+con.set_model(TransE)
 #Train the model.
 con.run()
 #To test models after training needs "set_test_flag(True)".
