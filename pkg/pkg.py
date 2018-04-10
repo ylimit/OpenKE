@@ -157,11 +157,21 @@ class PKG(object):
     @staticmethod
     def evaluate_embeddings(embedding_path, openke_dir, user_info_path):
         embeddings, genders, ages = PKG.load_embeddings(embedding_path, openke_dir, user_info_path)
+
+        embeddings = np.array(embeddings)
+        genders = np.array(genders)
+        female_idx = np.where(genders == 2)[0]
+        male_idx = np.where(genders == 1)[0]
+        male_idx = np.random.choice(male_idx, len(female_idx), replace=False)
+        user_idx = np.concatenate((female_idx, male_idx))
+        embeddings = embeddings[user_idx]
+        genders = genders[user_idx]
+
         # Now run cross-validation
         from sklearn.model_selection import cross_val_score
         from sklearn import svm
         clf = svm.SVC()
-        scores = cross_val_score(clf, np.array(embeddings), np.array(genders) - 1, cv=5)
+        scores = cross_val_score(clf, embeddings, genders, cv=5)
         print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
 
     @staticmethod
