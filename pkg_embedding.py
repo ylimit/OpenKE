@@ -1,9 +1,6 @@
 import argparse
 import os
 import sys
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib as mpl
 
 from pkg.pkg import PKG
 
@@ -14,8 +11,8 @@ def parse_args():
     """
     parser = argparse.ArgumentParser(description="Train personal knowledge embeddings.",
                                      formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument("-openkg", action="store", dest="openkg_dir", required=True,
-                        help="directory of openkg graph")
+    parser.add_argument("-openke", action="store", dest="openke_dir", required=True,
+                        help="directory of openke graph")
     parser.add_argument("-pkg", action="store", dest="pkg_dir", required=True,
                         help="directory of pkg dir")
     parser.add_argument("-output", action="store", dest="output_dir", required=True,
@@ -38,13 +35,13 @@ def parse_args():
     return options
 
 
-def convert_pkg_to_openkg(opts):
+def convert_pkg_to_openke(opts):
     pkg = PKG(pkg_path=os.path.join(opts.pkg_dir, "user_app_day_duration.txt"),
               user_list_path=os.path.join(opts.pkg_dir, "user_id_imei_birth_gender.txt"),
               app_list_path=os.path.join(opts.pkg_dir, "app_id_package_usercount.txt"))
     print("PKG loaded.")
     days = range(0, int(opts.ndays))
-    pkg.output_as_openkg(output_dir=opts.openkg_dir, days=days, weight_threshold=float(opts.weight_threshold))
+    pkg.output_as_openke(output_dir=opts.openke_dir, days=days, weight_threshold=float(opts.weight_threshold))
 
 
 def train_embeddings(opts):
@@ -61,7 +58,7 @@ def train_embeddings(opts):
     os.makedirs(opts.output_dir, exist_ok=True)
 
     con = Config()
-    con.set_in_path(opts.openkg_dir)
+    con.set_in_path(opts.openke_dir)
 
     con.set_test_flag(False)
     con.set_work_threads(4)
@@ -111,27 +108,14 @@ def train_embeddings(opts):
 
 def evaluate_embeddings(opts):
     PKG.evaluate_embeddings(embedding_path=os.path.join(opts.output_dir, "embedding.vec.json"),
-                            openke_dir=opts.openkg_dir,
+                            openke_dir=opts.openke_dir,
                             user_info_path=os.path.join(opts.pkg_dir, "user_id_imei_birth_gender.txt"))
 
 
-def plot_tsne(X_tsne, y, title):
-    # Scale and visualize the embedding vectors
-    x_min, x_max = np.min(X_tsne, 0), np.max(X_tsne, 0)
-    X = (X_tsne - x_min) / (x_max - x_min)
-
-    y_min, y_max = np.min(y), np.max(y)
-    y_range = y_max - y_min
-
-    plt.figure()
-    ax = plt.subplot(111)
-    for i in range(X.shape[0]):
-        plt.text(X[i, 0], X[i, 1], str(y[i]),
-                 color=plt.cm.Set1(float(y[i] - y_min) / y_range),
-                 fontdict={'weight': 'bold', 'size': 9})
-    plt.xticks([]), plt.yticks([])
-    if title is not None:
-        plt.title(title)
+def visualize_embeddings(opts):
+    PKG.visualize_embeddings(embedding_path=os.path.join(opts.output_dir, "embedding.vec.json"),
+                             openke_dir=opts.openke_dir,
+                             user_info_path=os.path.join(opts.pkg_dir, "user_id_imei_birth_gender.txt"))
 
 
 def main():
@@ -142,11 +126,13 @@ def main():
 
     phases = str(opts.phases).split(",")
     if "gen_kg" in phases:
-        convert_pkg_to_openkg(opts)
-    if "train_embed" in phases:
+        convert_pkg_to_openke(opts)
+    if "train" in phases:
         train_embeddings(opts)
-    if "eval_embed" in phases:
+    if "eval" in phases:
         evaluate_embeddings(opts)
+    if "visualize" in phases:
+        visualize_embeddings(opts)
     return
 
 
