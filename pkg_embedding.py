@@ -1,6 +1,9 @@
 import argparse
 import os
 import sys
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib as mpl
 
 from pkg.pkg import PKG
 
@@ -21,12 +24,14 @@ def parse_args():
                         help="name of the model to train the embeddings, could be TransE, TransH, HolE, RESCAL, etc.")
     parser.add_argument("-ndays", action="store", dest="ndays", default=1,
                         help="number of days of knowledge to include")
-    parser.add_argument("-phases", action="store", dest="phases", default="gen_kg,train_embed,eval_embed",
-                        help="phases to run, could be one or more or gen_kg, train_embed and eval_embed.")
-    # parser.add_argument("-alpha", action="store", dest="alpha", default=0.001,
-    #                     help="hyper parameter: alpha.")
-    # parser.add_argument("-nbatches", action="store", dest="nbatches", default=100,
-    #                     help="hyper parameter: nbatches.")
+    parser.add_argument("-weight_threshold", action="store", dest="weight_threshold", default=0,
+                        help="weight threshold of knowledge to include")
+    parser.add_argument("-phases", action="store", dest="phases", default="gen_kg,train,eval,visualize",
+                        help="phases to run, could be one or more of gen_kg, train, eval and visualize.")
+    parser.add_argument("-alpha", action="store", dest="alpha", default=0.001,
+                        help="hyper parameter: alpha.")
+    parser.add_argument("-nbatches", action="store", dest="nbatches", default=100,
+                        help="hyper parameter: nbatches.")
 
     options = parser.parse_args()
     # print options
@@ -39,7 +44,7 @@ def convert_pkg_to_openkg(opts):
               app_list_path=os.path.join(opts.pkg_dir, "app_id_package_usercount.txt"))
     print("PKG loaded.")
     days = range(0, int(opts.ndays))
-    pkg.output_as_openkg(output_dir=opts.openkg_dir, days=days)
+    pkg.output_as_openkg(output_dir=opts.openkg_dir, days=days, weight_threshold=float(opts.weight_threshold))
 
 
 def train_embeddings(opts):
@@ -61,8 +66,8 @@ def train_embeddings(opts):
     con.set_test_flag(False)
     con.set_work_threads(4)
     con.set_train_times(500)
-    con.set_nbatches(100)
-    con.set_alpha(0.001)
+    con.set_nbatches(int(opts.nbatches))
+    con.set_alpha(float(opts.alpha))
     con.set_margin(1.0)
     con.set_bern(0)
     con.set_dimension(64)
@@ -108,6 +113,26 @@ def evaluate_embeddings(opts):
     PKG.evaluate_embeddings(embedding_path=os.path.join(opts.output_dir, "embedding.vec.json"),
                             openke_dir=opts.openkg_dir,
                             user_info_path=os.path.join(opts.pkg_dir, "user_id_imei_birth_gender.txt"))
+
+
+def plot_tsne(X_tsne, y, title):
+    # Scale and visualize the embedding vectors
+    x_min, x_max = np.min(X_tsne, 0), np.max(X_tsne, 0)
+    X = (X_tsne - x_min) / (x_max - x_min)
+
+    y_min, y_max = np.min(y), np.max(y)
+    y_range = y_max - y_min
+
+    plt.figure()
+    ax = plt.subplot(111)
+    for i in range(X.shape[0]):
+        plt.text(X[i, 0], X[i, 1], str(y[i]),
+                 color=plt.cm.Set1(float(y[i] - y_min) / y_range),
+                 fontdict={'weight': 'bold', 'size': 9})
+    plt.xticks([]), plt.yticks([])
+    if title is not None:
+        plt.title(title)
+
 
 def main():
     """
