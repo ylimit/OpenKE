@@ -56,14 +56,13 @@ def one_hot_embedding(openke_dir):
         words = line.split()
         if len(words) != 3:
             continue
-        included_triples.append((words[0], words[1], words[2]))
+        included_triples.append((int(words[0]), int(words[1]), int(words[2])))
 
     # Gen one-hot embeddings
     included_objects = sorted(set([t[1] for t in included_triples]))
     object2id = {k: v for v, k in enumerate(included_objects)}
     user2objects = {}
-    for s, t, r in included_triples:
-        user_id = int(s)
+    for user_id, t, r in included_triples:
         object_id = object2id[t]
         if user_id not in user2objects:
             user2objects[user_id] = []
