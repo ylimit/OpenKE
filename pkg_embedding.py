@@ -88,7 +88,7 @@ def train_embeddings(opts):
         embedding_file = open(os.path.join(opts.output_dir, "embedding.vec.txt"), "w")
         embedding_file.write("{} {}\n".format(len(embeddings), embedding_dim))
         for user_id in embeddings:
-            embedding_file.write("{} {}\n".format(user_id, " ".join(embeddings[user_id])))
+            embedding_file.write("{} {}\n".format(user_id, " ".join([str(v) for v in embeddings[user_id]])))
         embedding_file.close()
         print("Saved one-hot embeddings to %s" % opts.output_dir)
         return
