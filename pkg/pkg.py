@@ -173,7 +173,7 @@ class PKG(object):
 
     @staticmethod
     def evaluate_embeddings(embedding_path, openke_dir, user_info_path, embedding_format="openke"):
-        embeddings, genders, ages = PKG.load_embeddings(embedding_path, openke_dir, user_info_path)
+        embeddings, genders, ages = PKG.load_embeddings(embedding_path, openke_dir, user_info_path, embedding_format)
         embeddings = np.array(embeddings)
         genders = np.array(genders)
 
@@ -194,7 +194,7 @@ class PKG(object):
 
     @staticmethod
     def visualize_embeddings(embedding_path, openke_dir, user_info_path, embedding_format="openke"):
-        embeddings, genders, ages = PKG.load_embeddings(embedding_path, openke_dir, user_info_path)
+        embeddings, genders, ages = PKG.load_embeddings(embedding_path, openke_dir, user_info_path, embedding_format)
         print("Computing t-SNE")
         from sklearn.manifold import TSNE
         X_tsne = TSNE(n_components=2, init='pca', random_state=0)

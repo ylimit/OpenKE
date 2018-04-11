@@ -18,7 +18,7 @@ def parse_args():
     parser.add_argument("-output", action="store", dest="output_dir", required=True,
                         help="directory of output dir")
     parser.add_argument("-model", action="store", dest="model_name", default="TransE",
-                        help="name of the model to train the embeddings, could be TransE, TransH, HolE, RESCAL, etc.")
+                        help="model to generate the embeddings, could be 1hot, TransE, TransH, HolE, RESCAL, etc.")
     parser.add_argument("-ndays", action="store", dest="ndays", default=1,
                         help="number of days of knowledge to include")
     parser.add_argument("-weight_threshold", action="store", dest="weight_threshold", default=0,
@@ -49,7 +49,47 @@ def convert_pkg_to_openke(opts):
                          weight_threshold=float(opts.weight_threshold))
 
 
+def one_hot_embedding(openke_dir):
+    import numpy as np
+    train2id_file = open(openke_dir + "/train2id.txt")
+    included_triples = []
+    for line in train2id_file.readlines()[1:]:
+        words = line.split()
+        if len(words) != 3:
+            continue
+        included_triples.append((words[0], words[1], words[2]))
+
+    # Gen one-hot embeddings
+    included_objects = sorted(set([t[1] for t in included_triples]))
+    object2id = {k: v for v, k in enumerate(included_objects)}
+    user2objects = {}
+    for user_id, t, r in included_triples:
+        object_id = object2id[t]
+        if user_id not in user2objects:
+            user2objects[user_id] = []
+        user2objects[user_id].append(object_id)
+
+    embedding_dim = len(included_objects)
+    embeddings = {}
+    for user_id in user2objects:
+        object_ids = user2objects[user_id]
+        embedding = np.zeros(embedding_dim)
+        embedding[object_ids] = 1
+        embeddings[user_id] = embedding
+    return embeddings
+
+
 def train_embeddings(opts):
+    os.makedirs(opts.output_dir, exist_ok=True)
+
+    if opts.model_name == "1hot":
+        import json
+        embeddings = one_hot_embedding(opts.openke_dir)
+        embedding_file = open(os.path.join(opts.output_dir, "embedding.vec.json"), "w")
+        json.dump(embeddings, embedding_file, indent=2)
+        embedding_file.close()
+        return
+
     from config.Config import Config
     from models.TransE import TransE
     from models.TransD import TransD
@@ -59,8 +99,6 @@ def train_embeddings(opts):
     from models.DistMult import DistMult
     from models.ComplEx import ComplEx
     from models.HolE import HolE
-
-    os.makedirs(opts.output_dir, exist_ok=True)
 
     con = Config()
     con.set_in_path(opts.openke_dir)
