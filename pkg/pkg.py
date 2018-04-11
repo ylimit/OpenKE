@@ -118,11 +118,23 @@ class PKG(object):
             test2id_file.close()
 
     @staticmethod
-    def load_embeddings(embedding_path, openke_dir, user_info_path):
-        import json
-        embedding_file = open(embedding_path, "r")
-        embedding_json = json.load(embedding_file)
-        ent_embeddings = embedding_json["ent_embeddings"]
+    def load_embeddings(embedding_path, openke_dir, user_info_path, embedding_format="openke"):
+        if embedding_format == "openke":
+            import json
+            embedding_file = open(embedding_path, "r")
+            embedding_json = json.load(embedding_file)
+            ent_embeddings = embedding_json["ent_embeddings"]
+        elif embedding_format == "openne":
+            embedding_file = open(embedding_path, "r")
+            ent_embeddings = {}
+            for line in embedding_file.readlines()[1:]:
+                words = line.split()
+                ent_id = int(words[0])
+                ent_embedding = [float(word) for word in words]
+                ent_embeddings[ent_id] = ent_embedding
+        else:
+            print("Unknown embedding format: %s" % embedding_format)
+            return
 
         entity2id_file = open(openke_dir + "/entity2id.txt")
         entity2id = {}
@@ -155,11 +167,12 @@ class PKG(object):
         return embeddings, genders, ages
 
     @staticmethod
-    def evaluate_embeddings(embedding_path, openke_dir, user_info_path):
+    def evaluate_embeddings(embedding_path, openke_dir, user_info_path, embedding_format="openke"):
         embeddings, genders, ages = PKG.load_embeddings(embedding_path, openke_dir, user_info_path)
-
         embeddings = np.array(embeddings)
         genders = np.array(genders)
+
+        # balance males and females
         female_idx = np.where(genders == 2)[0]
         male_idx = np.where(genders == 1)[0]
         male_idx = np.random.choice(male_idx, len(female_idx), replace=False)
@@ -175,7 +188,7 @@ class PKG(object):
         print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
 
     @staticmethod
-    def visualize_embeddings(embedding_path, openke_dir, user_info_path):
+    def visualize_embeddings(embedding_path, openke_dir, user_info_path, embedding_format="openke"):
         embeddings, genders, ages = PKG.load_embeddings(embedding_path, openke_dir, user_info_path)
         print("Computing t-SNE")
         from sklearn.manifold import TSNE
