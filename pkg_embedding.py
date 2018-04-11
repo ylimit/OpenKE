@@ -62,7 +62,8 @@ def one_hot_embedding(openke_dir):
     included_objects = sorted(set([t[1] for t in included_triples]))
     object2id = {k: v for v, k in enumerate(included_objects)}
     user2objects = {}
-    for user_id, t, r in included_triples:
+    for s, t, r in included_triples:
+        user_id = int(s)
         object_id = object2id[t]
         if user_id not in user2objects:
             user2objects[user_id] = []
@@ -88,6 +89,7 @@ def train_embeddings(opts):
         embedding_file = open(os.path.join(opts.output_dir, "embedding.vec.json"), "w")
         json.dump({"ent_embeddings": embeddings}, embedding_file)
         embedding_file.close()
+        print("Successfully generated one-hot embeddings")
         return
 
     from config.Config import Config
