@@ -86,8 +86,11 @@ def train_embeddings(opts):
         import json
         embeddings = one_hot_embedding(opts.openke_dir)
         print("Successfully generated one-hot embeddings")
-        embedding_file = open(os.path.join(opts.output_dir, "embedding.vec.json"), "w")
-        json.dump({"ent_embeddings": embeddings}, embedding_file, indent=1)
+        embedding_file = open(os.path.join(opts.output_dir, "embedding.vec.txt"), "w")
+        embedding_dim = len(embeddings.values()[0])
+        embedding_file.write("{} {}\n".format(len(embeddings), embedding_dim))
+        for user_id, embedding in embeddings:
+            embedding_file.write("{} {}\n".format(user_id, " ".join(embedding)))
         embedding_file.close()
         print("Saved one-hot embeddings to %s" % opts.output_dir)
         return
@@ -152,15 +155,35 @@ def train_embeddings(opts):
 
 
 def evaluate_embeddings(opts):
-    PKG.evaluate_embeddings(embedding_path=os.path.join(opts.output_dir, "embedding.vec.json"),
-                            openke_dir=opts.openke_dir,
-                            user_info_path=os.path.join(opts.pkg_dir, "user_id_imei_birth_gender.txt"))
+    embedding_json_path = os.path.join(opts.output_dir, "embedding.vec.json")
+    embedding_txt_path = os.path.join(opts.output_dir, "embedding.vec.txt")
+    if os.path.exists(embedding_json_path):
+        PKG.evaluate_embeddings(embedding_path=os.path.join(opts.output_dir, "embedding.vec.json"),
+                                openke_dir=opts.openke_dir,
+                                user_info_path=os.path.join(opts.pkg_dir, "user_id_imei_birth_gender.txt"))
+    elif os.path.exists(embedding_txt_path):
+        PKG.evaluate_embeddings(embedding_path=os.path.join(opts.output_dir, "embedding.vec.txt"),
+                                openke_dir=opts.openke_dir,
+                                user_info_path=os.path.join(opts.pkg_dir, "user_id_imei_birth_gender.txt"),
+                                embedding_format="openne")
+    else:
+        print("Couldn't find embedding.vec.json or embedding.vec.txt in %s" % opts.output_dir)
 
 
 def visualize_embeddings(opts):
-    PKG.visualize_embeddings(embedding_path=os.path.join(opts.output_dir, "embedding.vec.json"),
-                             openke_dir=opts.openke_dir,
-                             user_info_path=os.path.join(opts.pkg_dir, "user_id_imei_birth_gender.txt"))
+    embedding_json_path = os.path.join(opts.output_dir, "embedding.vec.json")
+    embedding_txt_path = os.path.join(opts.output_dir, "embedding.vec.txt")
+    if os.path.exists(embedding_json_path):
+        PKG.visualize_embeddings(embedding_path=os.path.join(opts.output_dir, "embedding.vec.json"),
+                                 openke_dir=opts.openke_dir,
+                                 user_info_path=os.path.join(opts.pkg_dir, "user_id_imei_birth_gender.txt"))
+    elif os.path.exists(embedding_txt_path):
+        PKG.visualize_embeddings(embedding_path=os.path.join(opts.output_dir, "embedding.vec.txt"),
+                                 openke_dir=opts.openke_dir,
+                                 user_info_path=os.path.join(opts.pkg_dir, "user_id_imei_birth_gender.txt"),
+                                 embedding_format="openne")
+    else:
+        print("Couldn't find embedding.vec.json or embedding.vec.txt in %s" % opts.output_dir)
 
 
 def main():
