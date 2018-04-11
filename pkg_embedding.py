@@ -85,10 +85,11 @@ def train_embeddings(opts):
     if opts.model_name == "1hot":
         import json
         embeddings = one_hot_embedding(opts.openke_dir)
-        embedding_file = open(os.path.join(opts.output_dir, "embedding.vec.json"), "w")
-        json.dump({"ent_embeddings": embeddings}, embedding_file)
-        embedding_file.close()
         print("Successfully generated one-hot embeddings")
+        embedding_file = open(os.path.join(opts.output_dir, "embedding.vec.json"), "w")
+        json.dump({"ent_embeddings": embeddings}, embedding_file, indent=1)
+        embedding_file.close()
+        print("Saved one-hot embeddings to %s" % opts.output_dir)
         return
 
     from config.Config import Config
