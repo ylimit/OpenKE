@@ -31,6 +31,8 @@ def parse_args():
                         help="hyper parameter: alpha.")
     parser.add_argument("-nbatches", action="store", dest="nbatches", default=100,
                         help="hyper parameter: nbatches.")
+    parser.add_argument("-epochs", action="store", dest="epochs", default=10,
+                        help="hyper parameter: epochs.")
 
     options = parser.parse_args()
     # print options
@@ -79,14 +81,14 @@ def one_hot_embedding(openke_dir):
     return embedding_dim, embeddings
 
 
-def autoencoder_embedding(openke_dir, new_dim, batch_size):
+def autoencoder_embedding(openke_dir, new_dim, batch_size, epochs):
     import numpy as np
     embedding_dim, embeddings_dict = one_hot_embedding(openke_dir)
     user_ids, embeddings = zip(*list(embeddings_dict.items()))
     embeddings = np.array(embeddings)
     from pkg.autoencoder import DeepAutoencoder
     dae = DeepAutoencoder([embedding_dim, new_dim*2, new_dim])
-    dae.train(x_train=embeddings, epochs=10, batch_size=batch_size)
+    dae.train(x_train=embeddings, epochs=epochs, batch_size=batch_size)
     embeddings = list(dae.encode(embeddings))
     return dict(zip(user_ids, embeddings))
 
@@ -106,7 +108,7 @@ def train_embeddings(opts):
         return
     if opts.model_name == "autoenc":
         new_dim = 64
-        embeddings = autoencoder_embedding(opts.openke_dir, new_dim, opts.nbatches)
+        embeddings = autoencoder_embedding(opts.openke_dir, new_dim, int(opts.nbatches), int(opts.epochs))
         print("Successfully generated autoencoder embeddings (dim: %s)" % new_dim)
         embedding_file = open(os.path.join(opts.output_dir, "embedding.vec.txt"), "w")
         embedding_file.write("{} {}\n".format(len(embeddings), new_dim))
