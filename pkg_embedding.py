@@ -86,7 +86,7 @@ def autoencoder_embedding(openke_dir, new_dim, batch_size):
     embeddings = np.array(embeddings)
     from pkg.autoencoder import DeepAutoencoder
     dae = DeepAutoencoder([embedding_dim, new_dim*2, new_dim])
-    dae.train(x_train=embeddings, epochs=5, batch_size=batch_size)
+    dae.train(x_train=embeddings, epochs=10, batch_size=batch_size)
     embeddings = list(dae.encode(embeddings))
     return dict(zip(user_ids, embeddings))
 

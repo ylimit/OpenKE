@@ -38,9 +38,9 @@ class DeepAutoencoder(object):
             decoded = layer(decoded)
             decoder = layer(decoder)
 
-        self.autoencoder = Model(input=encoder_input, output=decoded)
-        self.encoder = Model(input=encoder_input, output=encoded)
-        self.decoder = Model(input=decoder_input, output=decoder)
+        self.autoencoder = Model(inputs=encoder_input, outputs=decoded)
+        self.encoder = Model(inputs=encoder_input, outputs=encoded)
+        self.decoder = Model(inputs=decoder_input, outputs=decoder)
 
         self.autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
 
@@ -53,7 +53,7 @@ class DeepAutoencoder(object):
             callbacks.append(EarlyStopping(monitor='val_loss', patience=2, verbose=1, mode='auto'))
 
         self.autoencoder.fit(x_train, x_train,
-                             nb_epoch=epochs,
+                             epochs=epochs,
                              batch_size=batch_size,
                              shuffle=True,
                              validation_split=0.1,
