@@ -50,7 +50,6 @@ def convert_pkg_to_openke(opts):
 
 
 def one_hot_embedding(openke_dir):
-    import numpy as np
     train2id_file = open(openke_dir + "/train2id.txt")
     included_triples = []
     for line in train2id_file.readlines()[1:]:
@@ -73,8 +72,9 @@ def one_hot_embedding(openke_dir):
     embeddings = {}
     for user_id in user2objects:
         object_ids = user2objects[user_id]
-        embedding = np.zeros(embedding_dim)
-        embedding[object_ids] = 1
+        embedding = [0] * embedding_dim
+        for object_id in object_ids:
+            embedding[object_id] = 1
         embeddings[user_id] = embedding
     return embeddings
 
