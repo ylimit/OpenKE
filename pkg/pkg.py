@@ -189,7 +189,7 @@ class PKG(object):
         from sklearn.model_selection import cross_val_score
         from sklearn import svm
         clf = svm.SVC()
-        scores = cross_val_score(clf, embeddings, genders, cv=5)
+        scores = cross_val_score(clf, embeddings, genders, cv=5, scoring="f1_macro")
         print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
 
     @staticmethod
