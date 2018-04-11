@@ -79,18 +79,41 @@ def one_hot_embedding(openke_dir):
     return embedding_dim, embeddings
 
 
+def autoencoder_embedding(openke_dir, new_dim, batch_size):
+    import numpy as np
+    embedding_dim, embeddings_dict = one_hot_embedding(openke_dir)
+    user_ids, embeddings = zip(*list(embeddings_dict.items()))
+    embeddings = np.array(embeddings)
+    from pkg.autoencoder import DeepAutoencoder
+    dae = DeepAutoencoder([embedding_dim, new_dim*2, new_dim])
+    dae.train(x_train=embeddings, epochs=5, batch_size=batch_size)
+    embeddings = list(dae.encode(embeddings))
+    return dict(zip(user_ids, embeddings))
+
+
 def train_embeddings(opts):
     os.makedirs(opts.output_dir, exist_ok=True)
 
     if opts.model_name == "1hot":
         embedding_dim, embeddings = one_hot_embedding(opts.openke_dir)
-        print("Successfully generated one-hot embeddings")
+        print("Successfully generated one-hot embeddings (dim: %s)" % embedding_dim)
         embedding_file = open(os.path.join(opts.output_dir, "embedding.vec.txt"), "w")
         embedding_file.write("{} {}\n".format(len(embeddings), embedding_dim))
         for user_id in embeddings:
             embedding_file.write("{} {}\n".format(user_id, " ".join([str(v) for v in embeddings[user_id]])))
         embedding_file.close()
         print("Saved one-hot embeddings to %s" % opts.output_dir)
+        return
+    if opts.model_name == "autoenc":
+        new_dim = 64
+        embeddings = autoencoder_embedding(opts.openke_dir, new_dim, opts.nbatches)
+        print("Successfully generated autoencoder embeddings (dim: %s)" % new_dim)
+        embedding_file = open(os.path.join(opts.output_dir, "embedding.vec.txt"), "w")
+        embedding_file.write("{} {}\n".format(len(embeddings), new_dim))
+        for user_id in embeddings:
+            embedding_file.write("{} {}\n".format(user_id, " ".join([str(v) for v in embeddings[user_id]])))
+        embedding_file.close()
+        print("Saved autoencoder embeddings to %s" % opts.output_dir)
         return
 
     from config.Config import Config
