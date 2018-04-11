@@ -76,18 +76,16 @@ def one_hot_embedding(openke_dir):
         for object_id in object_ids:
             embedding[object_id] = 1
         embeddings[user_id] = embedding
-    return embeddings
+    return embedding_dim, embeddings
 
 
 def train_embeddings(opts):
     os.makedirs(opts.output_dir, exist_ok=True)
 
     if opts.model_name == "1hot":
-        import json
-        embeddings = one_hot_embedding(opts.openke_dir)
+        embedding_dim, embeddings = one_hot_embedding(opts.openke_dir)
         print("Successfully generated one-hot embeddings")
         embedding_file = open(os.path.join(opts.output_dir, "embedding.vec.txt"), "w")
-        embedding_dim = len(embeddings.values()[0])
         embedding_file.write("{} {}\n".format(len(embeddings), embedding_dim))
         for user_id, embedding in embeddings:
             embedding_file.write("{} {}\n".format(user_id, " ".join(embedding)))
