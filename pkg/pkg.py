@@ -135,7 +135,7 @@ class PKG(object):
             for line in embedding_file.readlines()[1:]:
                 words = line.split()
                 ent_id = int(words[0])
-                ent_embedding = [float(word) for word in words]
+                ent_embedding = [float(word) for word in words[1:]]
                 ent_embeddings[ent_id] = ent_embedding
         else:
             print("Unknown embedding format: %s" % embedding_format)
