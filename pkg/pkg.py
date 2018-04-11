@@ -55,7 +55,7 @@ class PKG(object):
             print("{} edges in total".format(len(g.edges())))
             return g
 
-    def output_as_openke(self, output_dir, days=None, day_rel=False, weight_threshold=0):
+    def output_as_openke(self, output_dir, days=None, day_rel=False, weight_threshold=0, gen_tests=False):
         print("Trying to output knowledge graph to " + output_dir)
         included_triples = set()
         traversed_edges = set()
@@ -93,8 +93,13 @@ class PKG(object):
         import random
         included_triples = list(included_triples)
         random.shuffle(included_triples)
-        test_len = int(0.1 * len(included_triples))
-        valid_len = int(0.2 * len(included_triples))
+
+        if gen_tests:
+            test_len = int(0.1 * len(included_triples))
+            valid_len = int(0.2 * len(included_triples))
+        else:
+            test_len = 0
+            valid_len = 0
 
         with open(output_dir + "/train2id.txt", "w") as train2id_file:
             train_triples = included_triples[valid_len:]
