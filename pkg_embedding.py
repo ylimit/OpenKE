@@ -86,7 +86,7 @@ def train_embeddings(opts):
         import json
         embeddings = one_hot_embedding(opts.openke_dir)
         embedding_file = open(os.path.join(opts.output_dir, "embedding.vec.json"), "w")
-        json.dump(embeddings, embedding_file, indent=2)
+        json.dump({"ent_embeddings": embeddings}, embedding_file)
         embedding_file.close()
         return
 
