@@ -117,6 +117,30 @@ def train_embeddings(opts):
         embedding_file.close()
         print("Saved autoencoder embeddings to %s" % opts.output_dir)
         return
+    if opts.model_name == "test":
+        new_dim = 64
+
+        import numpy as np
+        embedding_dim, embeddings_dict = one_hot_embedding(opts.openke_dir)
+        user_ids, embeddings = zip(*list(embeddings_dict.items()))
+        embeddings = np.array(embeddings)
+        from pkg.test_model import TestModel
+        dae = TestModel([embedding_dim, new_dim * 2, new_dim])
+        genders, ages = PKG.get_userinfo(openke_dir=opts.openke_dir,
+                                         user_info_path=os.path.join(opts.pkg_dir, "user_id_imei_birth_gender.txt"),
+                                         user_ids=user_ids)
+        dae.train(x_train=embeddings, y=np.array(genders) - 1, epochs=opts.epochs, batch_size=opts.batch_size)
+        embeddings = list(dae.encode(embeddings))
+        embeddings = dict(zip(user_ids, embeddings))
+
+        print("Successfully generated test embeddings (dim: %s)" % new_dim)
+        embedding_file = open(os.path.join(opts.output_dir, "embedding.vec.txt"), "w")
+        embedding_file.write("{} {}\n".format(len(embeddings), new_dim))
+        for user_id in embeddings:
+            embedding_file.write("{} {}\n".format(user_id, " ".join([str(v) for v in embeddings[user_id]])))
+        embedding_file.close()
+        print("Saved test embeddings to %s" % opts.output_dir)
+        return
 
     from config.Config import Config
     from models.TransE import TransE

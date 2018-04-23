@@ -123,6 +123,35 @@ class PKG(object):
             test2id_file.close()
 
     @staticmethod
+    def get_userinfo(openke_dir, user_info_path, user_ids):
+        entity2id_file = open(openke_dir + "/entity2id.txt")
+        id2entity = {}
+        for line in entity2id_file.readlines()[1:]:
+            words = line.split()
+            if len(words) != 2:
+                continue
+            id2entity[int(words[1])] = words[0]
+
+        entity2info = PKG.parse_user_list(user_info_path)
+
+        genders = []
+        ages = []
+        for ent_id in user_ids:
+            if ent_id not in id2entity:
+                print("WARNING: ent_id not found: %d" % ent_id)
+                return
+            entity = id2entity[ent_id]
+            ent_info = entity2info[entity]
+            ent_gender = int(ent_info[-1])
+            ent_age = 2018 - int(ent_info[-2][:4])
+            genders.append(ent_gender)
+            ages.append(ent_age)
+
+        print("Sample genders: %s" % genders[:5])
+        print("Sample ages: %s" % ages[:5])
+        return genders, ages
+
+    @staticmethod
     def load_embeddings(embedding_path, openke_dir, user_info_path, embedding_format="openke"):
         if embedding_format == "openke":
             import json
