@@ -129,7 +129,7 @@ def train_embeddings(opts):
         genders, ages = PKG.get_userinfo(openke_dir=opts.openke_dir,
                                          user_info_path=os.path.join(opts.pkg_dir, "user_id_imei_birth_gender.txt"),
                                          user_ids=user_ids)
-        dae.train(x_train=embeddings, y=np.array(genders) - 1, epochs=opts.epochs, batch_size=opts.batch_size)
+        dae.train(x_train=embeddings, y=np.array(genders) - 1, epochs=opts.epochs, batch_size=opts.nbatches)
         embeddings = list(dae.encode(embeddings))
         embeddings = dict(zip(user_ids, embeddings))
 
