@@ -2,6 +2,7 @@ from keras.layers import Input, Dense
 from keras.models import Model
 from keras import backend
 from keras.callbacks import EarlyStopping, TensorBoard
+import numpy as np
 
 
 class TestModel(object):
@@ -39,7 +40,7 @@ class TestModel(object):
 
         self.autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
 
-    def train(self, x_train, y, epochs, batch_size, log_dir='/tmp/autoencoder', stop_early=True):
+    def train(self, x, y, epochs, batch_size, log_dir='/tmp/autoencoder', stop_early=True):
         callbacks = []
         if backend._BACKEND == 'tensorflow':
             callbacks.append(TensorBoard(log_dir=log_dir))
@@ -47,12 +48,31 @@ class TestModel(object):
         if stop_early:
             callbacks.append(EarlyStopping(monitor='val_loss', patience=2, verbose=1, mode='auto'))
 
-        self.autoencoder.fit(x_train, y,
+        n_samples = len(x)
+        n_test = int(n_samples * 0.1)
+        print("Total samples: %d, test: %d" % (n_samples, n_test))
+        x_test, x_train = x[:n_test], x[n_test:]
+        y_test, y_train = y[:n_test], y[n_test:]
+
+        self.autoencoder.fit(x_train, y_train,
                              epochs=epochs,
                              batch_size=batch_size,
                              shuffle=True,
                              validation_split=0.1,
                              callbacks=callbacks)
+
+        y_predict = self.autoencoder.predict(x_test)
+
+        # True Positive (TP): we predict a label of 1 (positive), and the true label is 1.
+        TP = np.sum(np.logical_and(y_predict == 1, y_test == 1))
+        # True Negative (TN): we predict a label of 0 (negative), and the true label is 0.
+        TN = np.sum(np.logical_and(y_predict == 0, y_test == 0))
+        # False Positive (FP): we predict a label of 1 (positive), but the true label is 0.
+        FP = np.sum(np.logical_and(y_predict == 1, y_test == 0))
+        # False Negative (FN): we predict a label of 0 (negative), but the true label is 1.
+        FN = np.sum(np.logical_and(y_predict == 0, y_test == 1))
+
+        print 'TP: %i, FP: %i, TN: %i, FN: %i' % (TP, FP, TN, FN)
 
     def encode(self, x):
         return self.encoder.predict(x)

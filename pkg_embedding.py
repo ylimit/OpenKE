@@ -81,6 +81,35 @@ def one_hot_embedding(openke_dir):
     return embedding_dim, embeddings
 
 
+def one_hot_object_embedding(openke_dir):
+    train2id_file = open(openke_dir + "/train2id.txt")
+    included_triples = []
+    for line in train2id_file.readlines()[1:]:
+        words = line.split()
+        if len(words) != 3:
+            continue
+        included_triples.append((int(words[0]), int(words[1]), int(words[2])))
+
+    # Gen one-hot embeddings
+    included_users = sorted(set([t[0] for t in included_triples]))
+    user2id = {k: v for v, k in enumerate(included_users)}
+    object2users = {}
+    for user_id, object_id, r in included_triples:
+        user_id = user2id[user_id]
+        if object_id not in object2users:
+            object2users[object_id] = []
+        object2users[object_id].append(user_id)
+
+    embedding_dim = len(included_users)
+    embeddings = {}
+    for object_id in object2users:
+        user_ids = object2users[object_id]
+        embedding = [0] * embedding_dim
+        for user_id in user_ids:
+            embedding[user_id] = 1
+        embeddings[object_id] = embedding
+    return embedding_dim, embeddings
+
 def autoencoder_embedding(openke_dir, new_dim, batch_size, epochs):
     import numpy as np
     embedding_dim, embeddings_dict = one_hot_embedding(openke_dir)
@@ -97,23 +126,23 @@ def train_embeddings(opts):
     os.makedirs(opts.output_dir, exist_ok=True)
 
     if opts.model_name == "1hot":
-        embedding_dim, embeddings = one_hot_embedding(opts.openke_dir)
+        embedding_dim, user_embeddings = one_hot_embedding(opts.openke_dir)
         print("Successfully generated one-hot embeddings (dim: %s)" % embedding_dim)
         embedding_file = open(os.path.join(opts.output_dir, "embedding.vec.txt"), "w")
-        embedding_file.write("{} {}\n".format(len(embeddings), embedding_dim))
-        for user_id in embeddings:
-            embedding_file.write("{} {}\n".format(user_id, " ".join([str(v) for v in embeddings[user_id]])))
+        embedding_file.write("{} {}\n".format(len(user_embeddings), embedding_dim))
+        for user_id in user_embeddings:
+            embedding_file.write("{} {}\n".format(user_id, " ".join([str(v) for v in user_embeddings[user_id]])))
         embedding_file.close()
         print("Saved one-hot embeddings to %s" % opts.output_dir)
         return
     if opts.model_name == "autoenc":
         new_dim = 64
-        embeddings = autoencoder_embedding(opts.openke_dir, new_dim, int(opts.nbatches), int(opts.epochs))
+        user_embeddings = autoencoder_embedding(opts.openke_dir, new_dim, int(opts.nbatches), int(opts.epochs))
         print("Successfully generated autoencoder embeddings (dim: %s)" % new_dim)
         embedding_file = open(os.path.join(opts.output_dir, "embedding.vec.txt"), "w")
-        embedding_file.write("{} {}\n".format(len(embeddings), new_dim))
-        for user_id in embeddings:
-            embedding_file.write("{} {}\n".format(user_id, " ".join([str(v) for v in embeddings[user_id]])))
+        embedding_file.write("{} {}\n".format(len(user_embeddings), new_dim))
+        for user_id in user_embeddings:
+            embedding_file.write("{} {}\n".format(user_id, " ".join([str(v) for v in user_embeddings[user_id]])))
         embedding_file.close()
         print("Saved autoencoder embeddings to %s" % opts.output_dir)
         return
@@ -121,23 +150,23 @@ def train_embeddings(opts):
         new_dim = 64
 
         import numpy as np
-        embedding_dim, embeddings_dict = one_hot_embedding(opts.openke_dir)
-        user_ids, embeddings = zip(*list(embeddings_dict.items()))
-        embeddings = np.array(embeddings)
+        user_embedding_dim, user_embeddings_dict = one_hot_embedding(opts.openke_dir)
+        user_ids, user_embeddings = zip(*list(user_embeddings_dict.items()))
+        user_embeddings = np.array(user_embeddings)
         from pkg.test_model import TestModel
-        dae = TestModel([embedding_dim, new_dim * 2, new_dim])
+        dae = TestModel([user_embedding_dim, new_dim * 2, new_dim])
         genders, ages = PKG.get_userinfo(openke_dir=opts.openke_dir,
                                          user_info_path=os.path.join(opts.pkg_dir, "user_id_imei_birth_gender.txt"),
                                          user_ids=user_ids)
-        dae.train(x_train=embeddings, y=np.array(genders) - 1, epochs=int(opts.epochs), batch_size=int(opts.nbatches))
-        embeddings = list(dae.encode(embeddings))
-        embeddings = dict(zip(user_ids, embeddings))
+        dae.train(x_train=user_embeddings, y=np.array(genders) - 1, epochs=int(opts.epochs), batch_size=int(opts.nbatches))
+        user_embeddings = list(dae.encode(user_embeddings))
+        user_embeddings = dict(zip(user_ids, user_embeddings))
 
         print("Successfully generated test embeddings (dim: %s)" % new_dim)
         embedding_file = open(os.path.join(opts.output_dir, "embedding.vec.txt"), "w")
-        embedding_file.write("{} {}\n".format(len(embeddings), new_dim))
-        for user_id in embeddings:
-            embedding_file.write("{} {}\n".format(user_id, " ".join([str(v) for v in embeddings[user_id]])))
+        embedding_file.write("{} {}\n".format(len(user_embeddings), new_dim))
+        for user_id in user_embeddings:
+            embedding_file.write("{} {}\n".format(user_id, " ".join([str(v) for v in user_embeddings[user_id]])))
         embedding_file.close()
         print("Saved test embeddings to %s" % opts.output_dir)
         return
