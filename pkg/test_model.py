@@ -61,18 +61,9 @@ class TestModel(object):
                              validation_split=0.1,
                              callbacks=callbacks)
 
+        from sklearn.metrics import precision_recall_fscore_support
         y_predict = self.autoencoder.predict(x_test)
-
-        # True Positive (TP): we predict a label of 1 (positive), and the true label is 1.
-        TP = np.sum(np.logical_and(y_predict == 1, y_test == 1))
-        # True Negative (TN): we predict a label of 0 (negative), and the true label is 0.
-        TN = np.sum(np.logical_and(y_predict == 0, y_test == 0))
-        # False Positive (FP): we predict a label of 1 (positive), but the true label is 0.
-        FP = np.sum(np.logical_and(y_predict == 1, y_test == 0))
-        # False Negative (FN): we predict a label of 0 (negative), but the true label is 1.
-        FN = np.sum(np.logical_and(y_predict == 0, y_test == 1))
-
-        print('TP: %i, FP: %i, TN: %i, FN: %i' % (TP, FP, TN, FN))
+        print(precision_recall_fscore_support(y_test, y_predict))
 
     def encode(self, x):
         return self.encoder.predict(x)
