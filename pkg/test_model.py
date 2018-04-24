@@ -72,7 +72,7 @@ class TestModel(object):
         # False Negative (FN): we predict a label of 0 (negative), but the true label is 1.
         FN = np.sum(np.logical_and(y_predict == 0, y_test == 1))
 
-        print 'TP: %i, FP: %i, TN: %i, FN: %i' % (TP, FP, TN, FN)
+        print('TP: %i, FP: %i, TN: %i, FN: %i' % (TP, FP, TN, FN))
 
     def encode(self, x):
         return self.encoder.predict(x)
