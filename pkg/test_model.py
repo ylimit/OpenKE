@@ -63,6 +63,8 @@ class TestModel(object):
 
         from sklearn.metrics import precision_recall_fscore_support
         y_predict = self.autoencoder.predict(x_test)
+        y_predict[y_predict > 0.5] = 1
+        y_predict[y_predict <= 0.5] = 0
         print(precision_recall_fscore_support(y_test, y_predict))
 
     def encode(self, x):
