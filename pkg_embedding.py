@@ -12,7 +12,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Train personal knowledge embeddings.",
                                      formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument("-openke", action="store", dest="openke_dir", required=True,
-                        help="directory of openke graph")
+                        help="directory of openke format graph")
     parser.add_argument("-pkg", action="store", dest="pkg_dir", required=True,
                         help="directory of pkg dir")
     parser.add_argument("-output", action="store", dest="output_dir", required=True,
